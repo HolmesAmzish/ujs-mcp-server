@@ -62,7 +62,19 @@ def get_room_bill(room: str = "417") -> tuple:
     
 @mcp.tool()
 def get_room_bill_tool(room: str) -> str:
+    """
+    查询江苏大学 F7 区四楼宿舍的电费信息。
 
+    参数说明:
+    - room: 宿舍号后三位（例如 417 表示 F7 区四楼 417 宿舍），只需要填写数字部分。
+      输入示例：'417'
+      错误示例：'F7-417'、'F7 4 417'、'7-4-417'
+
+    返回内容:
+    - 宿舍地址
+    - 当前电费余额
+    - 查询时间
+    """
     address, currency, time = get_room_bill(room)
 
     result = "查询宿舍: {}\n当前余额: {}\n查询时间: {}".format(address, currency, time)
