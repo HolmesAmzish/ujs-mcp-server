@@ -34,7 +34,7 @@ def get_room_bill(address: str = "F-7-417") -> tuple:
     }
 
     block, building, room = address.split("-")
-    floor = building[0]
+    floor = room[0]
     
     data = {
         "feeitemid": "408",
