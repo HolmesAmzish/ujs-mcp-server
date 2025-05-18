@@ -4,10 +4,10 @@ from mcp.server.fastmcp import FastMCP
 # Initialize the FastMCP server
 mcp = FastMCP("ujs-mcp-server")
 
-def get_room_bill(room: str = "417") -> tuple:
+def get_room_bill(address: str = "F-7-417") -> tuple:
     """Query the electron for dormitory in Jiangsu University.
     Args:
-        room: str, the code like 417 room address
+        room: str, the code like F-7-417 room address
     Return:
         room: str
         current_price: str
@@ -33,14 +33,17 @@ def get_room_bill(room: str = "417") -> tuple:
         "Cookie": 'iPlanetDirectoryPro=200QmSYAlNcqNcLGXR12KP; JSESSIONID=jIL0h-40BnIfsw80qhrqbGbmgjo91FHKZF3GKtBx; TGC="third_login:TGT-6c0b9ffe7e7643e7bd5d501ee08ffe40"; error_times=0; locSession=ce20154f303d0b46762febe458889352'
     }
 
+    block, building, room = address.split("-")
+    floor = building[0]
+    
     data = {
         "feeitemid": "408",
         "type": "IEC",
-        "level": "4",
+        "level": f"{floor}",
         "campus": "校本部",
-        "building": "F区",
-        "floor": "7",
-        "room": f"7-4-{room}"
+        "building": f"{block}区",
+        "floor": f"{building}",
+        "room": f"{building}-{floor}-{room}"
     }
 
     response = requests.post(url, headers=headers, data=data)
@@ -61,24 +64,27 @@ def get_room_bill(room: str = "417") -> tuple:
         return None
     
 @mcp.tool()
-def get_room_bill_tool(room: str) -> str:
+def get_room_bill_tool(room_address: str) -> str:
     """
-    查询江苏大学 F7 区四楼宿舍的电费信息。
+    查询江苏大学宿舍的电费信息。
 
     参数说明:
-    - room: 宿舍号后三位（例如 417 表示 F7 区四楼 417 宿舍），只需要填写数字部分。
-      输入示例：'417'
-      错误示例：'F7-417'、'F7 4 417'、'7-4-417'
+    - room_address: str, 宿舍号，格式为 "F-7-417"
+    - 例如: "F-7-417", "A-1-417", "B-2-217"
+    - 第一个字母代表区号，ABCDEF区，第二个数字代表栋号，7代表某区第7栋，最后三个数字是房间号，其中房间号的第一个数字是楼层。
+    - 注意: 宿舍号必须是完整正确的格式，注意转换，比如F7-417转换成F-7-417, A1-417转换成A-1-417，或者自动补全转换，只有消息不足的时候告诉用户。
 
     返回内容:
     - 宿舍地址
     - 当前电费余额
     - 查询时间
     """
-    address, currency, time = get_room_bill(room)
+    result = get_room_bill(room_address)
+    if result is None:
+        return "查询失败，请检查宿舍号是否正确，或稍后再试。"
 
-    result = "查询宿舍: {}\n当前余额: {}\n查询时间: {}".format(address, currency, time)
-    return result
+    address, currency, time = result
+    return f"查询宿舍: {address}\n当前余额: {currency}\n查询时间: {time}"
 
 if __name__ == "__main__":
     # Initialize and run the server
